@@ -2,7 +2,7 @@ stages:
   - name: Build
     steps:
       - runScriptConfig:
-          image: java:8
+          image: maven:3-openjdk-8
           shellScript: mvn clean install -DskipTests
   - name: Build Docker
     steps:
@@ -22,5 +22,5 @@ stages:
             image.tag: core-functional-latest
           name: mod-circulation
           targetNamespace: core-functional
-timeout: 60
+timeout: 20
 notification: {}
