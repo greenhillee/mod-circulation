@@ -1,8 +1,9 @@
 package org.folio.circulation.resources;
 
-import java.util.List;
+import static org.folio.circulation.domain.notice.session.PatronActionType.ALL;
 import static org.folio.circulation.support.Result.failed;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -10,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.circulation.domain.ConfigurationRepository;
 import org.folio.circulation.domain.notice.session.ExpiredSession;
 import org.folio.circulation.domain.notice.session.PatronActionSessionService;
-import org.folio.circulation.domain.notice.session.PatronActionType;
 import org.folio.circulation.domain.notice.session.PatronExpiredSessionRepository;
 import org.folio.circulation.support.Clients;
 import org.folio.circulation.support.ClockManager;
@@ -26,7 +26,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 public class ExpiredSessionProcessingResource extends Resource {
-
   public ExpiredSessionProcessingResource(HttpClient client) {
     super(client);
   }
@@ -51,8 +50,8 @@ public class ExpiredSessionProcessingResource extends Resource {
 
     configurationRepository.lookupSessionTimeout()
       .thenCompose(r -> r.after(this::defineExpiredTime))
-      .thenCompose(r -> patronExpiredSessionRepository.findPatronExpiredSessions(
-        PatronActionType.ALL, r.value().toString()))
+      .thenCompose(r -> r.after(inactivityTime ->
+        patronExpiredSessionRepository.findPatronExpiredSessions(ALL, inactivityTime.toString())))
       .thenCompose(r -> r.after(expiredSessions -> attemptEndSession(
         patronSessionService, expiredSessions)))
       .thenApply(this::createWritableResult)
