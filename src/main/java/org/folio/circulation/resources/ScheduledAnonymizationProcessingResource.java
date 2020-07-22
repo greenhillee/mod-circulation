@@ -1,5 +1,7 @@
 package org.folio.circulation.resources;
 
+import static org.folio.circulation.support.results.AsynchronousResultBindings.safelyInitialise;
+
 import org.folio.circulation.domain.ConfigurationRepository;
 import org.folio.circulation.domain.anonymization.LoanAnonymization;
 import org.folio.circulation.domain.representations.anonymization.AnonymizeLoansRepresentation;
@@ -35,7 +37,7 @@ public class ScheduledAnonymizationProcessingResource extends Resource {
 
     LoanAnonymization loanAnonymization = new LoanAnonymization(clients);
 
-    configurationRepository.loanHistoryConfiguration()
+    safelyInitialise(configurationRepository::loanHistoryConfiguration)
       .thenCompose(r -> r.after(config -> loanAnonymization
           .byCurrentTenant(config).anonymizeLoans()))
       .thenApply(AnonymizeLoansRepresentation::from)
