@@ -20,6 +20,7 @@ import org.folio.circulation.support.ResponseWritableResult;
 import org.folio.circulation.support.Result;
 import org.folio.circulation.support.RouteRegistration;
 import org.folio.circulation.support.http.server.WebContext;
+import org.folio.circulation.support.results.CommonFailures;
 import org.joda.time.DateTime;
 
 import io.vertx.core.http.HttpClient;
@@ -55,6 +56,7 @@ public class ExpiredSessionProcessingResource extends Resource {
         patronExpiredSessionRepository.findPatronExpiredSessions(ALL, inactivityTime.toString())))
       .thenCompose(r -> r.after(expiredSessions -> attemptEndSession(
         patronSessionService, expiredSessions)))
+      .exceptionally(CommonFailures::failedDueToServerError)
       .thenApply(this::createWritableResult)
       .thenAccept(result -> result.writeTo(routingContext.response()));
   }
