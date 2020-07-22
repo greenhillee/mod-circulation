@@ -12,7 +12,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * Perform automatic loan anonymization based on tenant settings for loan history. 
+ * Perform automatic loan anonymization based on tenant settings for loan history.
  * This process is intended to run in short intervals.
  *
  */
@@ -33,10 +33,12 @@ public class ScheduledAnonymizationProcessingResource extends Resource {
 
     ConfigurationRepository configurationRepository = new ConfigurationRepository(clients);
 
-    configurationRepository.loanHistoryConfiguration().thenCompose(c -> c.after(config ->
-        new LoanAnonymization(clients).byCurrentTenant(config).anonymizeLoans())
-        .thenApply(AnonymizeLoansRepresentation::from)
-        .thenAccept(result -> result.writeTo(routingContext.response())));
+    LoanAnonymization loanAnonymization = new LoanAnonymization(clients);
 
+    configurationRepository.loanHistoryConfiguration()
+      .thenCompose(r -> r.after(config -> loanAnonymization
+          .byCurrentTenant(config).anonymizeLoans()))
+      .thenApply(AnonymizeLoansRepresentation::from)
+      .thenAccept(result -> result.writeTo(routingContext.response()));
   }
 }
