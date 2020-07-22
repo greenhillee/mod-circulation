@@ -1,6 +1,8 @@
 package org.folio.circulation.resources;
 
+
 import static org.folio.circulation.support.Result.failed;
+import static org.folio.circulation.support.results.AsynchronousResultBindings.safelyInitialise;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -47,7 +49,7 @@ public abstract class ScheduledNoticeProcessingResource extends Resource {
     final ConfigurationRepository configurationRepository =
       new ConfigurationRepository(clients);
 
-    configurationRepository.lookupSchedulerNoticesProcessingLimit()
+    safelyInitialise(configurationRepository::lookupSchedulerNoticesProcessingLimit)
       .thenCompose(r -> r.after(limit -> findNoticesToSend(scheduledNoticesRepository,
         limit)))
       .thenCompose(r -> r.after(notices -> handleNotices(clients, notices)))
