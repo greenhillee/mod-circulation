@@ -2,6 +2,7 @@ package org.folio.circulation.resources;
 
 import static org.folio.circulation.domain.notice.session.PatronActionType.ALL;
 import static org.folio.circulation.support.Result.failed;
+import static org.folio.circulation.support.results.AsynchronousResultBindings.safelyInitialise;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -48,7 +49,7 @@ public class ExpiredSessionProcessingResource extends Resource {
     final PatronActionSessionService patronSessionService = PatronActionSessionService.using(clients);
     final PatronExpiredSessionRepository patronExpiredSessionRepository = PatronExpiredSessionRepository.using(clients);
 
-    configurationRepository.lookupSessionTimeout()
+    safelyInitialise(configurationRepository::lookupSessionTimeout)
       .thenCompose(r -> r.after(this::defineExpiredTime))
       .thenCompose(r -> r.after(inactivityTime ->
         patronExpiredSessionRepository.findPatronExpiredSessions(ALL, inactivityTime.toString())))
