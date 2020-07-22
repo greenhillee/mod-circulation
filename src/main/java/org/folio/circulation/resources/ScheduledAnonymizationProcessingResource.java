@@ -8,6 +8,7 @@ import org.folio.circulation.domain.representations.anonymization.AnonymizeLoans
 import org.folio.circulation.support.Clients;
 import org.folio.circulation.support.RouteRegistration;
 import org.folio.circulation.support.http.server.WebContext;
+import org.folio.circulation.support.results.CommonFailures;
 
 import io.vertx.core.http.HttpClient;
 import io.vertx.ext.web.Router;
@@ -40,6 +41,7 @@ public class ScheduledAnonymizationProcessingResource extends Resource {
     safelyInitialise(configurationRepository::loanHistoryConfiguration)
       .thenCompose(r -> r.after(config -> loanAnonymization
           .byCurrentTenant(config).anonymizeLoans()))
+      .exceptionally(CommonFailures::failedDueToServerError)
       .thenApply(AnonymizeLoansRepresentation::from)
       .thenAccept(result -> result.writeTo(routingContext.response()));
   }
