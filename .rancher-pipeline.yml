@@ -22,5 +22,14 @@ stages:
             image.tag: core-functional-latest
           name: mod-circulation
           targetNamespace: core-functional
+      - runScriptConfig:
+          image: docker.io/iscompetent/update-module-descriptor
+          shellScript: echo 'finish'
+        env:
+          APP_NAME: mod-circulation
+        envFrom:
+          - sourceName: tenant-config
+            sourceKey: OKAPI_URL
+            targetKey: OKAPI
 timeout: 20
 notification: {}
